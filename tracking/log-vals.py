@@ -118,27 +118,20 @@ def read_loop():
 			if(len(data) > 0):
 				output += data
 				if(output[-1] == '\n'):
-					#output = output.replace('\n', '')
-					print output
-					#p = re.compile(':\s')
-					var = output.split(':')
-					print "var" + str(var)
-					#p = re.compile(',\s')
-					var2 = var[1].split(',')
-					print "var2" + str(var2)
-
-					if var[0] == Aaddr:
-						#AU = int(var2[0])
-						AR = leastsquares(int(var2[1]), cA, mA)/(sqrt(2)*7)
-					elif var[0] == Baddr:
-						#BU = int(var2[0])
-						BR = leastsquares(int(var2[1]), cB, mB)/(sqrt(2)*7)
-					elif var[0] == Caddr:
-						#CU = int(var2[0])
-						CR = leastsquares(int(var2[1]), cC, mC)/(sqrt(2)*7)
-					elif var[0] == Daddr:
-						#DU = int(var2[0])
-						DR =leastsquares(int(var2[1]), cD, mD)/(sqrt(2)*7)
+          itera = output.split('\n')
+          for(i in len(itera)):
+            if(len(itera[i]) > 0):
+              s_arr = itera[i].split('')
+              s_arr[0] = s_arr[0].replace(':', '')
+              s_arr[1] = s_arr[1].replace(',', '')
+              if s_arr[0] == Aaddr:
+                AR = leastsquares(int(s_arr[2]), cA, mA)/(sqrt(2)*7)
+              elif s_arr[0] == Baddr:
+                BR = leastsquares(int(s_arr[2]), cB, mB)/(sqrt(2)*7)
+              elif s_arr[0] == Caddr:
+                CR = leastsquares(int(s_arr[2]), cC, mC)/(sqrt(2)*7)
+              elif s_arr[0] == Daddr:
+                DR = leastsquares(int(s_arr[2]), cD, mD)/(sqrt(2)*7)
 					output = ''
 		except Exception, e:
 			print "Exception", e
