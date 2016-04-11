@@ -20,14 +20,14 @@ Daddr= "0798f385"
 AX = 0
 AY = 0
 
-BX = 0
-BY = 12
+BX = 5
+BY = 0
 
-CX = 10
-CY = 0
+CX = 0
+CY = 5
 
-DX = 10
-DY = 12
+DX = 5
+DY = 5
 
 AU = 0
 AR = 0
@@ -47,26 +47,23 @@ WEIGHTING = 1.3
 current_rssi = -30
 
 # measured inputs for least squares
-x = np.array([10.0, 20.0, 30.0, 40.0, 50.0, 60.0])
-y = np.array([-27.0, -31.0, -33.0, -36.0, -40.0, -41.0])
+x = np.array([1.4, 2.8, 4.2, 5.6])
+y = np.array([-36.0, -39.0, -42.0, -45.0])
 A = np.vstack([x, np.ones(len(x))]).T
 mA, cA = np.linalg.lstsq(A, y)[0]
 
 # measured inputs for least squares
-x = np.array([10.0, 20.0, 30.0, 40.0, 50.0, 60.0])
-y = np.array([-24.0, -27.0, -33.0, -35.0, -39.0, -39.0])
+y = np.array([-27.0, -30.0, -34.0, -39.0])
 A = np.vstack([x, np.ones(len(x))]).T
 mB, cB = np.linalg.lstsq(A, y)[0]
 
 # measured inputs for least squares
-x = np.array([10.0, 20.0, 30.0, 40.0, 50.0, 60.0])
-y = np.array([-33.0, -38.0, -41.0, -43.0, -50.0, -50.0])
+y = np.array([-29.0, -35.0, -41.0, -43.0])
 A = np.vstack([x, np.ones(len(x))]).T
 mC, cC = np.linalg.lstsq(A, y)[0]
 
 # measured inputs for least squares
-x = np.array([10.0, 20.0, 30.0, 40.0, 50.0, 60.0])
-y = np.array([-22.0, -27.0, -31.0, -39.0, -44.0, -51.0])
+y = np.array([-24.0, -27.0, -33.0, -36.0])
 A = np.vstack([x, np.ones(len(x))]).T
 mD, cD = np.linalg.lstsq(A, y)[0]
 
@@ -118,20 +115,22 @@ def read_loop():
 			if(len(data) > 0):
 				output += data
 				if(output[-1] == '\n'):
-          itera = output.split('\n')
-          for(i in len(itera)):
-            if(len(itera[i]) > 0):
-              s_arr = itera[i].split('')
-              s_arr[0] = s_arr[0].replace(':', '')
-              s_arr[1] = s_arr[1].replace(',', '')
-              if s_arr[0] == Aaddr:
-                AR = leastsquares(int(s_arr[2]), cA, mA)/(sqrt(2)*7)
-              elif s_arr[0] == Baddr:
-                BR = leastsquares(int(s_arr[2]), cB, mB)/(sqrt(2)*7)
-              elif s_arr[0] == Caddr:
-                CR = leastsquares(int(s_arr[2]), cC, mC)/(sqrt(2)*7)
-              elif s_arr[0] == Daddr:
-                DR = leastsquares(int(s_arr[2]), cD, mD)/(sqrt(2)*7)
+					itera = output.split('\n')
+					for i in itera:
+						if(len(i) > 0):
+							#print i
+							s_arr = i.split(' ')
+							#print len(s_arr)
+							s_arr[0] = s_arr[0].replace(':', '')
+							s_arr[1] = s_arr[1].replace(',', '')
+							if s_arr[0] == Aaddr:
+								AR = leastsquares(int(s_arr[2]), cA, mA)
+							elif s_arr[0] == Baddr:
+								BR = leastsquares(int(s_arr[2]), cB, mB)
+							elif s_arr[0] == Caddr:
+								CR = leastsquares(int(s_arr[2]), cC, mC)
+							elif s_arr[0] == Daddr:
+								DR = leastsquares(int(s_arr[2]), cD, mD)
 					output = ''
 		except Exception, e:
 			print "Exception", e
@@ -166,8 +165,13 @@ while True:
 		matC = matC.dot(matA.T)
 		matC = matC.dot(matB)
 
-		print str(matC.item(0))
-		print str(matC.item(1))
+		print "AR= " + str(AR)
+		print "BR= " + str(BR)
+		print "CR= " + str(CR)
+		print "DR= " + str(DR)
+
+		print "X= " + str(round(matC.item(0), 1))
+		print "Y= " + str(round(matC.item(1), 1))
 		# pylab.plot(matC.item(0), matC.item(1), 'o')
   #   	pylab.xlim(0, 10)
   #   	pylab.ylim(0, 12)
