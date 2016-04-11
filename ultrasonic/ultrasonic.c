@@ -13,6 +13,7 @@
 #include "sensortag/cc2650/board.h"
 #include "lib/cc26xxware/driverlib/gpio.h"
 #include "ti-lib.h"
+#include "dev/leds.h"
 
 //-----------------------USEFUL STUFF ------------------//
 
@@ -34,7 +35,14 @@ int32_t ultrasonic_pulse(void) {
   clock_delay_usec(5);
   GPIOPinWrite(ULTRA_PIN, 0);
   GPIODirModeSet(ULTRA_PIN, GPIO_DIR_MODE_IN);
-  while(!GPIOPinRead(ULTRA_PIN));
+  while(!GPIOPinRead(ULTRA_PIN)) {
+    tick_count++;
+    if(tick_count > PIN_TIMEOUT) {
+      return -1;
+    }
+    clock_delay_usec(1);
+  }
+  tick_count = 0;
   while(GPIOPinRead(ULTRA_PIN)) {
     tick_count++;
     if(tick_count > PIN_TIMEOUT) {
@@ -43,6 +51,7 @@ int32_t ultrasonic_pulse(void) {
     }
     clock_delay_usec(1);
   }
+
   return tick_count;
 }
 
@@ -55,13 +64,26 @@ AUTOSTART_PROCESSES(&gpio_process);
 //Main Thread
 PROCESS_THREAD(gpio_process, ev, data) {
   static struct etimer et;
+  int latest_tick = 0, distance;
   PROCESS_BEGIN();
   etimer_set(&et, CLOCK_SECOND);
 
 	
 	while(1) {
     PROCESS_WAIT_UNTIL(etimer_expired(&et));
-    printf("Tick: %d\n\r", (int) ultrasonic_pulse());
+    latest_tick = (int) ultrasonic_pulse();
+    //formula for conversion
+    distance = (latest_tick + 31) / 10;
+    if(distance > 84) {
+      leds_off(LEDS_ALL);
+      leds_on(LEDS_GREEN);
+    } else if(distance < 10) {
+      leds_off(LEDS_ALL);
+      leds_on(LEDS_RED);
+    } else {
+      leds_off(LEDS_ALL);
+    }
+    printf("Tick: %d, Distance: %d+-3 cm\n\r", latest_tick, distance);
     etimer_reset(&et);
 	}
 
